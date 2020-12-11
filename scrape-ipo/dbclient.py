@@ -2,39 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import sqlalchemy
 import os
-import dbclient
 
+app_env = os.getenv("APP_ENV")
 connection_name = os.getenv("INSTANCE_CONNECTION_NAME")
 db_password = os.getenv("DATABASE_USER_PASSWORD")
 db_name = "stock_production"
 db_user = "root"
 driver_name = 'mysql+pymysql'
 query_string = dict({"unix_socket": "/cloudsql/{}".format(connection_name)})
-
-def main(event, context):
-    response = requests.get('https://www.jpx.co.jp/listing/stocks/new/')
-    soup = BeautifulSoup(response.content, 'html.parser')
-    rows = soup.select('tbody > tr')
-    stock_count = int(len(rows) / 2)
-
-    for i in range(0, stock_count):
-        values = {}
-        elms = rows[i * 2].select('td')
-
-        dates = elms[0].text.split()
-        values['ipo_date'] = dates[0]
-        values['ipo_accepted_date'] = dates[1].strip('（）')
-        values['name'] = elms[1].text.strip()
-        values['stock_id'] = elms[2].text.strip()
-        values['provisional_price'] = elms[5].text
-        values['offering_volume'] = elms[6].text
-        elms = rows[i * 2 + 1].select('td')
-        values['market'] = elms[0].text
-        values['offering_price'] = elms[3].text
-        values['sale_volume'] = elms[4].text
-
-        print(values)
-        print(dbclient.insert(values))
 
 
 def insert(values):
@@ -62,7 +37,3 @@ def insert(values):
     except Exception as e:
         return 'Error: {}'.format(str(e))
     return 'ok'
-
-
-if __name__ == '__main__':
-    main(None, None)
