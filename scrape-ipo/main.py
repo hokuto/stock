@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sqlalchemy
 import os
+import dbclient
 
 connection_name = os.getenv("INSTANCE_CONNECTION_NAME")
 db_password = os.getenv("DATABASE_USER_PASSWORD")
@@ -33,7 +34,7 @@ def main(event, context):
         values['sale_volume'] = elms[4].text
 
         print(values)
-        print(insert(values))
+        print(dbclient.insert(values))
 
 
 def insert(values):
